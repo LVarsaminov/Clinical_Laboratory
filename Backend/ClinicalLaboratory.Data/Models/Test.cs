@@ -1,6 +1,4 @@
-﻿using ClinicalLaboratory.Data.Models;
-
-namespace ClinicalLaboratory.Domain
+﻿namespace ClinicalLaboratory.Data.Models
 {
     public class Test
     {

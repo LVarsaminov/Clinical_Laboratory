@@ -1,5 +1,4 @@
 ﻿using ClinicalLaboratory.Data.Models;
-using ClinicalLaboratory.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

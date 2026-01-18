@@ -1,9 +1,7 @@
-
 using ClinicalLaboratory.Data;
-using ClinicalLaboratory.Domain;
+using ClinicalLaboratory.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace ClinicalLaboratoryApi
 {
@@ -16,7 +14,6 @@ namespace ClinicalLaboratoryApi
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
