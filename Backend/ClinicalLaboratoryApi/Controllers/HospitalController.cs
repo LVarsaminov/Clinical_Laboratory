@@ -130,7 +130,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Create new hospital (Admin only)
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Employee,Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateHospital([FromBody] CreateHospitalRequest request)
         {
             try
