@@ -45,32 +45,6 @@ namespace ClinicalLaboratory.Data
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
 
-                    var hospital = new Hospital
-                    {
-                        Name = "Main Hospital",
-                        Address = "123 Medical Street, Sofia"
-                    };
-
-                    context.Hospitals.Add(hospital);
-                    await context.SaveChangesAsync();
-
-                    var laboratory = new Laboratory
-                    {
-                        Name = "Clinical Laboratory",
-                        HospitalId = hospital.Id
-                    };
-
-                    context.Laboratories.Add(laboratory);
-                    await context.SaveChangesAsync();
-
-                    var adminEmployee = new Employee
-                    {
-                        ApplicationUserId = adminUser.Id,
-                        FullName = "System Administrator",
-                        LaboratoryId = laboratory.Id
-                    };
-
-                    context.Employees.Add(adminEmployee);
                     await context.SaveChangesAsync();
                 }
             }
