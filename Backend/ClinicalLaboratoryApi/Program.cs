@@ -92,6 +92,17 @@ namespace ClinicalLaboratoryApi
                     };
                 });
 
+            //CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("Default", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000");
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                });
+            });
+
             // Authorization
             builder.Services.AddAuthorization();
 
@@ -122,7 +133,10 @@ namespace ClinicalLaboratoryApi
             using (var scope = app.Services.CreateScope())
             {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                await SeedRoles.Initialize(roleManager);
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                await SeedRoles.Initialize(roleManager, userManager, context);
             }
 
             // Configure the HTTP request pipeline.
