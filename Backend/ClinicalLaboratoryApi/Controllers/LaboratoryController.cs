@@ -8,7 +8,7 @@ namespace ClinicalLaboratoryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     public class LaboratoriesController : ControllerBase
     {
         private readonly ILaboratoryRepository _laboratoryRepository;

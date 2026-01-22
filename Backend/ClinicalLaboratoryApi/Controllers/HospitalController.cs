@@ -8,7 +8,7 @@ namespace ClinicalLaboratoryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     public class HospitalsController : ControllerBase
     {
         private readonly IHospitalRepository _hospitalRepository;
@@ -29,7 +29,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all hospitals (Employee only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllHospitals()
         {
             try
@@ -56,7 +56,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get hospital by ID
         /// </summary>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetHospitalById(int id)
         {
             try
@@ -96,7 +96,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Search hospitals by name or address (Employee only)
         /// </summary>
         [HttpGet("search")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> SearchHospitals([FromQuery] string searchTerm)
         {
             try
@@ -174,7 +174,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Update hospital (Admin only)
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> UpdateHospital(int id, [FromBody] UpdateHospitalRequest request)
         {
             try
@@ -208,7 +208,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Delete hospital (Admin only)
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> DeleteHospital(int id)
         {
             try
@@ -237,7 +237,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get hospital statistics (Employee only)
         /// </summary>
         [HttpGet("{id}/statistics")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetHospitalStatistics(int id)
         {
             try
@@ -274,7 +274,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all hospitals with their laboratories (Employee only)
         /// </summary>
         [HttpGet("with-laboratories")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetHospitalsWithLaboratories()
         {
             try

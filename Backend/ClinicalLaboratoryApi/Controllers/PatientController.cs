@@ -23,7 +23,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all patients (Employee only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllPatients()
         {
             var patients = await _patientService.GetAllPatientsAsync();

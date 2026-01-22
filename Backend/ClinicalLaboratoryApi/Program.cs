@@ -97,6 +97,7 @@ namespace ClinicalLaboratoryApi
                     policy.WithOrigins("http://localhost:3000");
                     policy.AllowAnyHeader();
                     policy.AllowAnyMethod();
+                    policy.AllowCredentials();
                 });
             });
 
@@ -144,7 +145,7 @@ namespace ClinicalLaboratoryApi
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("Default");
             app.UseAuthorization();
 
 
