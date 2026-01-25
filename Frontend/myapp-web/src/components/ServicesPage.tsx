@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { servicesApi, laboratoriesApi } from "../services/api";
+import { servicesApi } from "../services/api";
 import "../styles/ServicesPage.css";
 
 interface Service {
   id: number;
-  laboratoryId: number;
   name: string;
-  description?: string;
-  serviceCode: string;
   price: number;
-  turnaroundTime?: number;
-  requiresFasting?: boolean;
-  sampleType?: string;
-  isActive?: boolean;
-  createdAt?: string;
-}
-
-interface Laboratory {
-  id: number;
-  name: string;
 }
 
 export function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
-  const [laboratories, setLaboratories] = useState<Laboratory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -45,23 +31,16 @@ export function ServicesPage() {
     try {
       setLoading(true);
       setError(null);
-      const [srvRes, labRes] = await Promise.all([
-        servicesApi.apiServicesGet(),
-        laboratoriesApi.apiLaboratoriesGet(),
-      ]);
-      setServices(Array.isArray(srvRes.data) ? srvRes.data : []);
-      setLaboratories(Array.isArray(labRes.data) ? labRes.data : []);
+      const res = await servicesApi.apiServicesGet();
+      setServices(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to fetch data";
-      setError(errorMsg);
+      setError(err.response?.data?.message || err.message || "Failed to fetch services");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -72,28 +51,25 @@ export function ServicesPage() {
       setError("Service name is required");
       return;
     }
-    if (!formData.price) {
-      setError("Price is required");
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      setError("Service price must be greater than 0");
       return;
     }
 
     try {
       setCreating(true);
       setError(null);
+
       await servicesApi.apiServicesPost({
         name: formData.name.trim(),
         price: parseFloat(formData.price),
       } as any);
 
-      setFormData({
-        name: "",
-        price: "",
-      });
+      setFormData({ name: "", price: "" });
       setShowForm(false);
       await fetchData();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to create service";
-      setError(errorMsg);
+      setError(err.response?.data?.message || err.message || "Failed to create service");
     } finally {
       setCreating(false);
     }
@@ -120,20 +96,23 @@ export function ServicesPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingId || !formData.name.trim() || !formData.price) {
-      setError("All fields required");
+    if (!editingId || !formData.name.trim() || parseFloat(formData.price) <= 0) {
+      setError("All fields are required and price must be greater than 0");
       return;
     }
+
     try {
       setCreating(true);
       await servicesApi.apiServicesIdPut(editingId, {
+        id: editingId,
         name: formData.name.trim(),
         price: parseFloat(formData.price),
       } as any);
-      await fetchData();
+
       setFormData({ name: "", price: "" });
       setShowForm(false);
       setEditingId(null);
+      await fetchData();
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update service");
     } finally {
@@ -141,27 +120,8 @@ export function ServicesPage() {
     }
   };
 
-  const handleSearch = async (term: string) => {
-    setSearchTerm(term);
-    if (!term.trim()) {
-      await fetchData();
-      return;
-    }
-    try {
-      setLoading(true);
-      const res = await servicesApi.apiServicesSearchGet(term);
-      setServices(Array.isArray(res.data) ? res.data : []);
-    } catch (err: any) {
-      console.log("Search not available");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredServices = services.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.serviceCode?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredServices = services.filter((s) =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -186,7 +146,7 @@ export function ServicesPage() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="e.g., Blood Test, X-Ray"
+                  placeholder="Enter service name"
                   disabled={creating}
                   required
                 />
@@ -215,9 +175,9 @@ export function ServicesPage() {
               <button type="submit" className="btn btn-success" disabled={creating}>
                 {creating ? (editingId ? "Updating..." : "Creating...") : (editingId ? "Update Service" : "Create Service")}
               </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => {
                   setShowForm(false);
                   setEditingId(null);
@@ -234,9 +194,9 @@ export function ServicesPage() {
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search services by name or code..."
+          placeholder="Search services by name..."
           value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
         <span className="result-count">{filteredServices.length} results</span>
@@ -253,12 +213,7 @@ export function ServicesPage() {
               <tr>
                 <th>ID</th>
                 <th>Service Name</th>
-                <th>Code</th>
-                <th>Laboratory</th>
                 <th>Price</th>
-                <th>Turnaround</th>
-                <th>Sample Type</th>
-                <th>Fasting</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -267,17 +222,9 @@ export function ServicesPage() {
                 <tr key={service.id}>
                   <td>{service.id}</td>
                   <td className="font-weight-bold">{service.name}</td>
-                  <td>{service.serviceCode || "N/A"}</td>
-                  <td>{laboratories.find((l) => l.id === service.laboratoryId)?.name || "N/A"}</td>
                   <td>${service.price.toFixed(2)}</td>
-                  <td>{service.turnaroundTime ? `${service.turnaroundTime}h` : "N/A"}</td>
-                  <td>{service.sampleType || "N/A"}</td>
-                  <td>{service.requiresFasting ? "Yes" : "No"}</td>
                   <td>
-                    <button
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleEditClick(service)}
-                    >
+                    <button className="btn btn-sm btn-info" onClick={() => handleEditClick(service)}>
                       Edit
                     </button>
                     <button

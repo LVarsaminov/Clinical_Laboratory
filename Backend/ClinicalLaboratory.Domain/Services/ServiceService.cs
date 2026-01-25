@@ -50,11 +50,19 @@ namespace ClinicalLaboratory.Domain.Services
 
         public async Task UpdateServiceAsync(Service service)
         {
+            if (service == null)
+                throw new ArgumentNullException(nameof(service));
+
+            // Fetch the existing entity safely
             var existingService = await _serviceRepository.GetByIdAsync(service.Id);
             if (existingService == null)
                 throw new KeyNotFoundException($"Service with ID {service.Id} not found");
 
-            await _serviceRepository.UpdateAsync(service);
+            // Update the tracked entity
+            existingService.Name = service.Name;
+            existingService.Price = service.Price;
+
+            await _serviceRepository.UpdateAsync(existingService);
         }
 
         public async Task DeleteServiceAsync(int id)
