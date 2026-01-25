@@ -27,24 +27,87 @@ export function Dashboard() {
 
   const handleRegisterPatient = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientFormData.fullName.trim() || !patientFormData.egn.trim()) {
-      setError("Full name and EGN are required");
+    
+    // Validation
+    if (!patientFormData.fullName.trim()) {
+      setError("Full name is required");
+      return;
+    }
+    if (!patientFormData.egn.trim()) {
+      setError("EGN (National ID) is required");
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      await patientsApi.apiPatientsPost({
+      setSuccess(null);
+
+      const fullNameParts = patientFormData.fullName.trim().split(" ");
+      const firstName = fullNameParts[0];
+      const lastName = fullNameParts.length > 1 ? fullNameParts.slice(1).join(" ") : firstName;
+
+      // Generate a temporary email and password for the patient account
+      const tempEmail = `patient_${Date.now()}@localhost.local`;
+      const tempPassword = `Patient@${Math.random().toString(36).substring(2, 10)}`;
+
+      const patientPayload = {
+        email: tempEmail,
+        password: tempPassword,
+        role: "Patient",
         fullName: patientFormData.fullName.trim(),
         egn: patientFormData.egn.trim(),
-      } as any);
+      };
+
+      console.log("Registering patient with data:", patientPayload);
+
+      const response = await authApi.apiAuthRegisterPost(patientPayload as any);
+
+      console.log("Patient registered successfully:", response.data);
       setSuccess("Patient registered successfully!");
       setPatientFormData({ fullName: "", egn: "" });
       setShowPatientForm(false);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to register patient");
+      console.error("Patient registration error details:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        message: err.message,
+      });
+      
+      let errorMsg = "Failed to register patient";
+      
+      if (err.response?.status === 403) {
+        errorMsg = "You don't have permission to register patients. Please contact an administrator.";
+      } else if (err.response?.status === 401) {
+        errorMsg = "Your session has expired. Please log in again.";
+      } else if (err.response?.status === 400) {
+        // Try to extract detailed error information
+        const responseData = err.response?.data;
+        if (typeof responseData === 'string') {
+          errorMsg = responseData;
+        } else if (responseData?.message) {
+          errorMsg = responseData.message;
+        } else if (responseData?.errors) {
+          // Handle validation errors object
+          if (typeof responseData.errors === 'object') {
+            errorMsg = Object.entries(responseData.errors)
+              .map(([key, value]: any) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+              .join(" | ");
+          } else {
+            errorMsg = responseData.errors;
+          }
+        } else {
+          errorMsg = "Invalid patient data. Please check all fields.";
+        }
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -118,6 +181,8 @@ export function Dashboard() {
             <h2>Quick Patient Registration</h2>
             {showPatientForm ? (
               <form onSubmit={handleRegisterPatient} className="quick-form">
+                {error && <div className="alert alert-error" style={{ marginBottom: "15px" }}>{error}</div>}
+                
                 <div className="form-group">
                   <label htmlFor="fullName">Full Name *</label>
                   <input
@@ -157,7 +222,10 @@ export function Dashboard() {
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => setShowPatientForm(false)}
+                    onClick={() => {
+                      setShowPatientForm(false);
+                      setError(null);
+                    }}
                     disabled={loading}
                   >
                     Cancel
@@ -167,7 +235,11 @@ export function Dashboard() {
             ) : (
               <button
                 className="btn btn-primary"
-                onClick={() => setShowPatientForm(true)}
+                onClick={() => {
+                  setShowPatientForm(true);
+                  setError(null);
+                  setSuccess(null);
+                }}
                 style={{ fontSize: "1.1em", padding: "12px 24px" }}
               >
                 + Register New Patient
