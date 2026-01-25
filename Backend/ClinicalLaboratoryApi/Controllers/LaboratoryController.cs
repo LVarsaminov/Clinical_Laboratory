@@ -29,7 +29,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all laboratories (Employee only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllLaboratories()
         {
             try
@@ -57,6 +57,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get laboratory by ID
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetLaboratoryById(int id)
         {
             try
@@ -106,7 +107,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get laboratories by hospital ID (Employee only)
         /// </summary>
         [HttpGet("hospital/{hospitalId}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetLaboratoriesByHospitalId(int hospitalId)
         {
             try
@@ -177,7 +178,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Create new laboratory (Admin/Manager only)
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Employee,Admin")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> CreateLaboratory([FromBody] CreateLaboratoryRequest request)
         {
             try
@@ -214,7 +215,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Update laboratory (Admin/Manager only)
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> UpdateLaboratory(int id, [FromBody] UpdateLaboratoryRequest request)
         {
             try
@@ -241,7 +242,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Delete laboratory (Admin only)
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> DeleteLaboratory(int id)
         {
             try
@@ -269,7 +270,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get laboratory statistics (Employee only)
         /// </summary>
         [HttpGet("{id}/statistics")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetLaboratoryStatistics(int id)
         {
             try
@@ -283,11 +284,7 @@ namespace ClinicalLaboratoryApi.Controllers
                 {
                     LaboratoryId = laboratory.Id,
                     LaboratoryName = laboratory.Name,
-                    TotalEmployees = laboratory.Employees?.Count ?? 0,
-                    TotalTestsToday = 0, // You would calculate this
-                    TotalTestsThisMonth = 0, // You would calculate this
-                    ActivePatients = 0, // You would calculate this
-                    RevenueThisMonth = 0 // You would calculate this
+                    TotalEmployees = laboratory.Employees?.Count ?? 0
                 };
 
                 return Ok(statistics);
@@ -300,7 +297,6 @@ namespace ClinicalLaboratoryApi.Controllers
         }
     }
 
-    // DTOs for Laboratory
     public class LaboratoryDto
     {
         public int Id { get; set; }

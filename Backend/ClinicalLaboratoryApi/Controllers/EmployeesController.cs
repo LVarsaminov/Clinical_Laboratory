@@ -51,23 +51,6 @@ namespace ClinicalLaboratoryApi.Controllers
         }
 
         /// <summary>
-        /// Create new employee
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> CreateEmployee([FromBody] Employee employee)
-        {
-            try
-            {
-                var createdEmployee = await _employeeService.CreateEmployeeAsync(employee);
-                return CreatedAtAction(nameof(GetEmployeeById), new { id = createdEmployee.Id }, createdEmployee);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
-
-        /// <summary>
         /// Update employee
         /// </summary>
         [HttpPut("{id}")]

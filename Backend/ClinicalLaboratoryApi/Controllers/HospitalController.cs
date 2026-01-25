@@ -174,7 +174,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Update hospital (Admin only)
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Employee, Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateHospital(int id, [FromBody] UpdateHospitalRequest request)
         {
             try
@@ -208,7 +208,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Delete hospital (Admin only)
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Employee, Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteHospital(int id)
         {
             try
@@ -254,7 +254,6 @@ namespace ClinicalLaboratoryApi.Controllers
                     HospitalName = hospital.Name,
                     TotalLaboratories = laboratories.Count(),
                     TotalEmployees = laboratories.Sum(l => l.Employees?.Count ?? 0),
-                    // These would be calculated from test data in a real scenario
                     TotalTestsToday = 0,
                     TotalTestsThisMonth = 0,
                     TotalPatientsThisMonth = 0,
@@ -315,7 +314,6 @@ namespace ClinicalLaboratoryApi.Controllers
         }
     }
 
-    // DTOs for Hospital
     public class HospitalDto
     {
         public int Id { get; set; }
