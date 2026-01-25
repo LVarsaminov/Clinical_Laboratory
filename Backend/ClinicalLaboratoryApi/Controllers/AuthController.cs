@@ -1,4 +1,5 @@
 using ClinicalLaboratory.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicalLaboratoryApi.Controllers
@@ -18,6 +19,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Register a new user with specified role (Patient or Employee)
         /// </summary>
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
@@ -50,6 +52,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Login user and get JWT token
         /// </summary>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var result = await _authService.LoginAsync(request);

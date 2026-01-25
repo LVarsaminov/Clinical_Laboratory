@@ -42,16 +42,9 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const fetchLaboratories = async () => {
     try {
       setLoadingLaboratories(true);
-
       const res = await laboratoriesApi.apiLaboratoriesGet();
-
-      // 🔧 FIX: Swagger client returns `never`, so cast once safely
       const data = res.data as any;
-
-      const labs = Array.isArray(data)
-        ? data
-        : data?.items || data?.data || [];
-
+      const labs = Array.isArray(data) ? data : data?.items || data?.data || [];
       setLaboratories(labs);
       console.log("Laboratories loaded:", labs);
     } catch (err) {
@@ -83,13 +76,9 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       }
     } catch (err: any) {
       let errorMessage = "Login failed";
-      if (err.response?.status === 401) {
-        errorMessage = "Invalid email or password";
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else {
-        errorMessage = err.message || "Login failed";
-      }
+      if (err.response?.status === 401) errorMessage = "Invalid email or password";
+      else if (err.response?.data?.message) errorMessage = err.response.data.message;
+      else errorMessage = err.message || "Login failed";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -103,42 +92,64 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       setError(null);
       setSuccess(null);
 
+      // Validations
+      if (!regEmail.trim()) {
+        setError("Email is required");
+        setLoading(false);
+        return;
+      }
       if (!regFullName.trim()) {
         setError("Full name is required");
+        setLoading(false);
         return;
       }
-
       if (regFullName.trim().split(" ").length < 2) {
         setError("Please provide both first and last name");
+        setLoading(false);
         return;
       }
-
+      if (!regPassword) {
+        setError("Password is required");
+        setLoading(false);
+        return;
+      }
       if (regPassword !== regConfirmPassword) {
         setError("Passwords do not match");
+        setLoading(false);
         return;
       }
-
       if (regRole === "Employee" && !regLaboratoryId) {
         setError("Laboratory is required for employees");
+        setLoading(false);
+        return;
+      }
+      if (regRole === "Patient" && !regEgn.trim()) {
+        setError("EGN is required for patients");
+        setLoading(false);
         return;
       }
 
-      const registrationData: any = {
-        email: regEmail.trim(),
-        password: regPassword,
-        role: regRole,
-        fullName: regFullName.trim(),
-        egn: regEgn.trim() || null,
-      };
+   const registrationData: any = {
+  email: regEmail.trim(),
+  password: regPassword,
+  role: regRole,
+  fullName: regFullName.trim(),
+};
 
-      if (regRole === "Employee") {
-        registrationData.laboratoryId = Number(regLaboratoryId);
-      }
+if (regRole === "Patient") {
+  registrationData.egn = regEgn.trim(); // only include EGN for patients
+}
 
+if (regRole === "Employee") {
+  registrationData.laboratoryId = Number(regLaboratoryId); // only include laboratoryId for employees
+}
+
+      // Send registration request
       await authApi.apiAuthRegisterPost(registrationData);
 
       setSuccess("Registration successful! Logging you in...");
 
+      // Auto-login
       const loginRes = await authApi.apiAuthLoginPost({
         email: regEmail.trim(),
         password: regPassword,
@@ -151,13 +162,9 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       }
     } catch (err: any) {
       let errorMessage = "Registration failed";
-      if (err.response?.status === 409) {
-        errorMessage = "Email already registered";
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else {
-        errorMessage = err.message || "Registration failed";
-      }
+      if (err.response?.status === 409) errorMessage = "Email already registered";
+      else if (err.response?.data?.message) errorMessage = err.response.data.message;
+      else errorMessage = err.message || "Registration failed";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -203,7 +210,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
           <form onSubmit={handleLoginSubmit} className="login-form">
             <div className="form-group">
               <label>Email</label>
-              <input value={email} onChange={e => setEmail(e.target.value)} />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div className="form-group">
@@ -211,7 +218,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
@@ -227,12 +234,32 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
           <form onSubmit={handleRegisterSubmit} className="login-form">
             <div className="form-group">
               <label>Email *</label>
-              <input value={regEmail} onChange={e => setRegEmail(e.target.value)} required />
+              <input value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
             </div>
 
             <div className="form-group">
               <label>Full Name *</label>
-              <input value={regFullName} onChange={e => setRegFullName(e.target.value)} required />
+              <input value={regFullName} onChange={(e) => setRegFullName(e.target.value)} required />
+            </div>
+
+            <div className="form-group">
+              <label>Password *</label>
+              <input
+                type={showRegPassword ? "text" : "password"}
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Confirm Password *</label>
+              <input
+                type={showRegConfirmPassword ? "text" : "password"}
+                value={regConfirmPassword}
+                onChange={(e) => setRegConfirmPassword(e.target.value)}
+                required
+              />
             </div>
 
             <div className="form-group">
@@ -249,12 +276,26 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
               </select>
             </div>
 
+            {/* EGN for Patient */}
+            {regRole === "Patient" && (
+              <div className="form-group">
+                <label>EGN *</label>
+                <input
+                  value={regEgn}
+                  onChange={(e) => setRegEgn(e.target.value)}
+                  placeholder="Enter EGN"
+                  required
+                />
+              </div>
+            )}
+
+            {/* Laboratory for Employee */}
             {regRole === "Employee" && (
               <div className="form-group">
                 <label>Laboratory *</label>
                 <select
                   value={regLaboratoryId}
-                  onChange={e => setRegLaboratoryId(e.target.value)}
+                  onChange={(e) => setRegLaboratoryId(e.target.value)}
                   disabled={loadingLaboratories}
                   required
                 >
@@ -271,6 +312,8 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
             )}
 
             {error && <div className="alert alert-error">{error}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
+
             <button type="submit" className="btn btn-primary btn-full">
               Register
             </button>
