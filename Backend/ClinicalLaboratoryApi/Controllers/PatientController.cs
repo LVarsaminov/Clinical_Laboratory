@@ -23,7 +23,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all patients (Employee only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllPatients()
         {
             var patients = await _patientService.GetAllPatientsAsync();
@@ -34,6 +34,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get patient by ID
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetPatientById(int id)
         {
             var patient = await _patientService.GetPatientByIdAsync(id);
@@ -54,7 +55,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Search patients by name or EGN (Employee only)
         /// </summary>
         [HttpGet("search")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> SearchPatients([FromQuery] string searchTerm)
         {
             var patients = await _patientService.SearchPatientsAsync(searchTerm);

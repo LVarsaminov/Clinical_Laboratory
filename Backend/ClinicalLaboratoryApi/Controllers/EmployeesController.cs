@@ -7,7 +7,7 @@ namespace ClinicalLaboratoryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Employee")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Employee, Admin")]
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
@@ -48,23 +48,6 @@ namespace ClinicalLaboratoryApi.Controllers
         {
             var employees = await _employeeService.GetEmployeesByLaboratoryIdAsync(laboratoryId);
             return Ok(employees);
-        }
-
-        /// <summary>
-        /// Create new employee
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> CreateEmployee([FromBody] Employee employee)
-        {
-            try
-            {
-                var createdEmployee = await _employeeService.CreateEmployeeAsync(employee);
-                return CreatedAtAction(nameof(GetEmployeeById), new { id = createdEmployee.Id }, createdEmployee);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
         }
 
         /// <summary>
