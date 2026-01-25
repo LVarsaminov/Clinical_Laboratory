@@ -1,0 +1,48 @@
+services:
+  localhost:
+    ports:
+      - "44370:8080"
+    environment:
+      - name=value
+    build:
+      context: ./Backend
+      dockerfile: ClinicalLaboratoryApi/Dockerfile
+    depends_on:
+      - db
+    networks:
+      - public
+      - private
+
+  db:
+    container_name: clinical_laboratory-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=User123!
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+    networks:
+      - private
+
+  frontend:
+    build:
+      context: ./Frontend/myapp-web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - localhost
+    networks:
+      - public
+      
+volumes:
+  sqlserver_data:
+
+networks:
+  public:
+    driver: bridge
+  private:
+    driver: bridge

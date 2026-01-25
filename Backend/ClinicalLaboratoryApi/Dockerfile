@@ -1,29 +1,38 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
+# Remove or fix the USER line - $APP_UID is not defined
+# USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-
-# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ClinicalLaboratoryApi.csproj", "."]
-RUN dotnet restore "./ClinicalLaboratoryApi.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./ClinicalLaboratoryApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# Copy solution file first
+COPY ClinicalLaboratoryApi/ClinicalLaboratoryApi.sln .
+
+# Copy project files
+COPY ClinicalLaboratoryApi/ClinicalLaboratoryApi.csproj ./ClinicalLaboratoryApi/
+COPY ClinicalLaboratory.Data/ClinicalLaboratory.Data.csproj ./ClinicalLaboratory.Data/
+COPY ClinicalLaboratory.Domain/ClinicalLaboratory.Domain.csproj ./ClinicalLaboratory.Domain/
+
+# Restore using the solution
+RUN dotnet restore "ClinicalLaboratoryApi/ClinicalLaboratoryApi.csproj"
+
+# Copy the rest of the code
+COPY ClinicalLaboratoryApi/ ./ClinicalLaboratoryApi/
+COPY ClinicalLaboratory.Data/ ./ClinicalLaboratory.Data/
+COPY ClinicalLaboratory.Domain/ ./ClinicalLaboratory.Domain/
+
+# Build the main project
+WORKDIR "/src/ClinicalLaboratoryApi"
+RUN dotnet build "ClinicalLaboratoryApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ClinicalLaboratoryApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "ClinicalLaboratoryApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
