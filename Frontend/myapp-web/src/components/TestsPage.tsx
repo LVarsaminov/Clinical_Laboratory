@@ -12,6 +12,7 @@ interface Test {
   testCode: string;
   sampleCollectionDate: string;
   resultDate?: string;
+  date?: string;
   status: string;
   result?: string;
   notes?: string;
@@ -23,8 +24,7 @@ interface Test {
 interface Patient {
   id: number;
   patientCode?: string;
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   applicationUserId?: number;
 }
 
@@ -35,8 +35,7 @@ interface Service {
 
 interface Employee {
   id: number;
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
 }
 
 interface Laboratory {
@@ -93,7 +92,7 @@ export function TestsPage() {
 
         setCurrentPatientId(patient.id);
 
-        const testRes = await testsApi.apiTestsPatientPatientIdGet(patient.id);
+        const testRes = await testsApi.apiTestsMyTestsGet();
         setTests(Array.isArray(testRes.data) ? testRes.data : []);
 
         const [servicesRes, employeesRes] = await Promise.all([
@@ -108,15 +107,15 @@ export function TestsPage() {
         const testRes = await testsApi.apiTestsGet();
         setTests(Array.isArray(testRes.data) ? testRes.data : []);
 
-        const [patRes, srvRes, empRes, labRes] = await Promise.all([
-          patientsApi.apiPatientsGet(),
+        const [srvRes, patRes, empRes, labRes] = await Promise.all([
           servicesApi.apiServicesGet(),
+          patientsApi.apiPatientsGet(),
           employeesApi.apiEmployeesGet(),
           laboratoriesApi.apiLaboratoriesGet(),
         ]);
 
-        setPatients(Array.isArray(patRes.data) ? patRes.data : []);
         setServices(Array.isArray(srvRes.data) ? srvRes.data : []);
+        setPatients(Array.isArray(patRes.data) ? patRes.data : [])
         setEmployees(Array.isArray(empRes.data) ? empRes.data : []);
         setLaboratories(Array.isArray(labRes.data) ? labRes.data : []);
       }
@@ -188,7 +187,7 @@ export function TestsPage() {
         patientId: parseInt(formData.patientId),
         serviceId: parseInt(formData.serviceId),
         employeeId: parseInt(formData.employeeId),
-        sampleCollectionDate: formData.date,
+        date: formData.date,
       } as any);
       await fetchData();
       setFormData({
@@ -233,11 +232,6 @@ export function TestsPage() {
     <section className="page-section">
       <div className="page-header">
         <h2>Medical Tests Management</h2>
-        {isEmployee && (
-          <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancel" : "+ Register Test"}
-          </button>
-        )}
       </div>
 
       {showForm && isEmployee && (
@@ -250,7 +244,7 @@ export function TestsPage() {
                 <select name="patientId" value={formData.patientId} onChange={handleInputChange} required>
                   <option value="">Select a patient</option>
                   {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.patientCode})</option>
+                    <option key={p.id} value={p.id}>({p.id}) {p.fullName}</option>
                   ))}
                 </select>
               </div>
@@ -265,7 +259,7 @@ export function TestsPage() {
                 <label htmlFor="employeeId">Registered By *</label>
                 <select name="employeeId" value={formData.employeeId} onChange={handleInputChange} required>
                   <option value="">Select an employee</option>
-                  {employees.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}
+                  {employees.map(e => <option key={e.id} value={e.id}>({e.id}) {e.fullName}</option>)}
                 </select>
               </div>
               <div className="form-group">
@@ -303,18 +297,9 @@ export function TestsPage() {
               {tests.map(test => (
                 <tr key={test.id}>
                   <td>{test.id}</td>
-                  <td>{`${patients.find(p => p.id === test.patientId)?.id || "N/A"}`}</td>
+                  <td>{`${test.patientId || "N/A"}`}</td>
                   <td>{services.find(s => s.id === test.serviceId)?.name || "N/A"}</td>
-                  <td>
-  {test.sampleCollectionDate
-    ? (() => {
-        const fixedDateStr = test.sampleCollectionDate.replace(' ', 'T').split('.')[0]; // Remove .0000000
-        const parsedDate = new Date(fixedDateStr);
-        console.log(test)
-        return isNaN(parsedDate.getTime()) ? "N/A" : parsedDate.toLocaleDateString();
-      })()
-    : "N/A"}
-</td>
+                  <td>{test.date}</td>
 
                   {isEmployee && (
                     <td>

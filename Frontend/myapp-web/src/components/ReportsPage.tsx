@@ -393,7 +393,6 @@ export function ReportsPage() {
                       <th>Employee</th>
                       <th>Tests Registered</th>
                       <th>Completed</th>
-                      <th>Avg. Completion Time</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -402,7 +401,6 @@ export function ReportsPage() {
                         <td className="font-weight-bold">{report.employeeName || `Employee ${report.employeeId}`}</td>
                         <td>{report.totalTestsRegistered || 0}</td>
                         <td>{report.completedTests || 0}</td>
-                        <td>{report.averageCompletionTime ? `${report.averageCompletionTime}h` : "N/A"}</td>
                       </tr>
                     ))}
                   </tbody>
