@@ -28,8 +28,8 @@ namespace ClinicalLaboratoryApi.Controllers
         /// <summary>
         /// Get all laboratories (Employee only)
         /// </summary>
+        [AllowAnonymous]
         [HttpGet]
-        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllLaboratories()
         {
             try
