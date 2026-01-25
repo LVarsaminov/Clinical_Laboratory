@@ -126,7 +126,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Update test (Employee only)
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Admin, Employee")]
         public async Task<IActionResult> UpdateTest(int id, [FromBody] Test test)
         {
             if (id != test.Id)

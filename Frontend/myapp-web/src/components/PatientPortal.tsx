@@ -11,6 +11,7 @@ interface Test {
   testCode: string;
   sampleCollectionDate: string;
   resultDate?: string;
+  date?: string
   status: string;
   result?: string;
   notes?: string;
@@ -68,18 +69,16 @@ export function PatientPortal() {
       setPatient(currentPatient);
 
       // Fetch patient's tests
-      const testsRes = await testsApi.apiTestsPatientPatientIdGet(currentPatient.id);
+      const testsRes = await testsApi.apiTestsMyTestsGet();
       const patientTests = Array.isArray(testsRes.data) ? testsRes.data : [];
       setTests(patientTests);
 
       // Fetch services and employees for reference
-      const [servicesRes, employeesRes] = await Promise.all([
+      const [servicesRes] = await Promise.all([
         servicesApi.apiServicesGet(),
-        employeesApi.apiEmployeesGet(),
       ]);
 
       setServices(Array.isArray(servicesRes.data) ? servicesRes.data : []);
-      setEmployees(Array.isArray(employeesRes.data) ? employeesRes.data : []);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || "Failed to fetch data";
       setError(errorMsg);
@@ -103,14 +102,7 @@ export function PatientPortal() {
         return "status-unknown";
     }
   };
-
-  const filteredTests = tests.filter((test) => {
-    const matchesStatus = filterStatus === "All" || test.status.toLowerCase() === filterStatus.toLowerCase();
-    const matchesSearch =
-      test.testCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      services.find((s) => s.id === test.serviceId)?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+console.log(tests)
 
   return (
     <section className="page-section">
@@ -147,7 +139,7 @@ export function PatientPortal() {
           <option value="Completed">Completed</option>
           <option value="Cancelled">Cancelled</option>
         </select>
-        <span className="result-count">{filteredTests.length} results</span>
+        <span className="result-count">{tests.length} results</span>
       </div>
 
       {loading && <div className="loading">Loading your tests...</div>}
@@ -158,7 +150,7 @@ export function PatientPortal() {
         </div>
       )}
 
-      {!loading && filteredTests.length === 0 ? (
+      {!loading && tests.length === 0 ? (
         <div className="no-data">No medical tests found</div>
       ) : (
         <div className="table-responsive">
@@ -167,31 +159,15 @@ export function PatientPortal() {
               <tr>
                 <th>Test Code</th>
                 <th>Service</th>
-                <th>Collection Date</th>
-                <th>Result Date</th>
-                <th>Status</th>
-                <th>Result</th>
-                <th>Cost</th>
-                <th>Paid</th>
-                <th>Notes</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
-              {filteredTests.map((test) => (
+              {tests.map((test) => (
                 <tr key={test.id}>
-                  <td className="font-weight-bold">{test.testCode}</td>
+                  <td className="font-weight-bold">{test.id}</td>
                   <td>{services.find((s) => s.id === test.serviceId)?.name || "N/A"}</td>
-                  <td>{new Date(test.sampleCollectionDate).toLocaleDateString()}</td>
-                  <td>{test.resultDate ? new Date(test.resultDate).toLocaleDateString() : "Pending"}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusBadgeClass(test.status)}`}>
-                      {test.status}
-                    </span>
-                  </td>
-                  <td>{test.result || "Pending"}</td>
-                  <td>${test.cost.toFixed(2)}</td>
-                  <td>{test.isPaid ? "Yes" : "No"}</td>
-                  <td>{test.notes || "—"}</td>
+                  <td>{test.date}</td>
                 </tr>
               ))}
             </tbody>
