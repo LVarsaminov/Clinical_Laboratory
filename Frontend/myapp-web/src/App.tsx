@@ -36,7 +36,7 @@ function App() {
   const adminNavItems = [
     { id: "dashboard", label: "Dashboard", show: true },
     { id: "hospitals", label: "Hospitals", show: isAdmin },
-    { id: "laboratories", label: "Laboratories", show: isAdmin || isEmployee },
+    { id: "laboratories", label: "Laboratories", show: isAdmin },
     { id: "employees", label: "Employees", show: isAdmin },
     { id: "patients", label: "Patients", show: isAdmin || isEmployee },
     { id: "services", label: "Services", show: isAdmin },

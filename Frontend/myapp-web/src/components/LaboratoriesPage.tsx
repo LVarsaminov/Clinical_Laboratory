@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { laboratoriesApi, hospitalsApi, employeesApi } from "../services/api";
 import "../styles/LaboratoriesPage.css";
+import axios, { AxiosResponse } from "axios";
 
 interface Laboratory {
   id: number;
@@ -87,25 +88,36 @@ export function LaboratoriesPage() {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [labRes, hospRes, empRes] = await Promise.all([
-        laboratoriesApi.apiLaboratoriesGet(),
-        hospitalsApi.apiHospitalsGet(),
-        employeesApi.apiEmployeesGet(),
-      ]);
-      setLaboratories(Array.isArray(labRes.data) ? labRes.data : []);
-      setHospitals(Array.isArray(hospRes.data) ? hospRes.data : []);
-      setEmployees(Array.isArray(empRes.data) ? empRes.data : []);
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to fetch data";
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    // These already return AxiosPromise<void>, you just await them
+    const labRes = await laboratoriesApi.apiLaboratoriesGet();
+    const hospRes = await hospitalsApi.apiHospitalsGet();
+    const empRes = await employeesApi.apiEmployeesGet();
+
+    // Extract data
+    const labs = Array.isArray(labRes.data) ? labRes.data : [];
+    const hospitals = Array.isArray(hospRes.data) ? hospRes.data : [];
+    const employees = Array.isArray(empRes.data) ? empRes.data : [];
+
+    setLaboratories(labs);
+    setHospitals(hospitals);
+    setEmployees(employees);
+
+    console.log("Labs:", labs);
+    console.log("Hospitals:", hospitals);
+    console.log("Employees:", employees);
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || "Failed to fetch data";
+    setError(errorMsg);
+    console.error("Fetch data error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
