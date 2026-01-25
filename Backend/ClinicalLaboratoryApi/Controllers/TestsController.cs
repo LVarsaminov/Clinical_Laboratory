@@ -7,7 +7,7 @@ namespace ClinicalLaboratoryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class TestsController : ControllerBase
     {
         private readonly ITestService _testService;
@@ -23,7 +23,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Get all tests (Employee only)
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> GetAllTests()
         {
             var tests = await _testService.GetAllTestsAsync();

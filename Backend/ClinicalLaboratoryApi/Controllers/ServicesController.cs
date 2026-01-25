@@ -1,4 +1,5 @@
 using ClinicalLaboratory.Data.Models;
+using ClinicalLaboratory.Data.Repositories;
 using ClinicalLaboratory.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,10 +8,11 @@ namespace ClinicalLaboratoryApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ServicesController : ControllerBase
     {
         private readonly IServiceService _serviceService;
+        private readonly IServiceRepository _serviceRepository;
 
         public ServicesController(IServiceService serviceService)
         {
@@ -57,7 +59,7 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Create new service (Employee only)
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> CreateService([FromBody] Service service)
         {
             try
@@ -75,11 +77,14 @@ namespace ClinicalLaboratoryApi.Controllers
         /// Update service (Employee only)
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> UpdateService(int id, [FromBody] Service service)
         {
+            if (service == null)
+                return BadRequest("Service cannot be null");
+
             if (id != service.Id)
-                return BadRequest();
+                return BadRequest("ID mismatch");
 
             try
             {
@@ -96,11 +101,12 @@ namespace ClinicalLaboratoryApi.Controllers
             }
         }
 
+
         /// <summary>
         /// Delete service (Employee only)
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> DeleteService(int id)
         {
             try

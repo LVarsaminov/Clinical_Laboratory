@@ -39,7 +39,7 @@ function App() {
     { id: "laboratories", label: "Laboratories", show: isAdmin },
     { id: "employees", label: "Employees", show: isAdmin },
     { id: "patients", label: "Patients", show: isAdmin || isEmployee },
-    { id: "services", label: "Services", show: isAdmin },
+    { id: "services", label: "Services", show: isAdmin || isEmployee },
     { id: "tests", label: "Tests", show: isAdmin || isEmployee },
     { id: "reports", label: "Reports", show: isAdmin || isEmployee },
   ];
