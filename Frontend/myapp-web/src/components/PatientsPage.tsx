@@ -224,66 +224,7 @@ export function PatientsPage() {
     <section className="page-section">
       <div className="page-header">
         <h2>Patients Management</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Cancel" : "+ Register Patient"}
-        </button>
       </div>
-
-      {showForm && (
-        <div className="form-card">
-          <h3>{editingId ? "Edit Patient" : "Register New Patient"}</h3>
-          <form onSubmit={editingId ? handleUpdate : handleSubmit} className="patient-form">
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="fullName">Full Name *</label>
-                <input
-                  id="fullName"
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  placeholder="Enter full name"
-                  disabled={creating}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="egn">EGN (National ID) *</label>
-                <input
-                  id="egn"
-                  type="text"
-                  name="egn"
-                  value={formData.egn}
-                  onChange={handleInputChange}
-                  placeholder="Enter EGN"
-                  disabled={creating}
-                  required
-                />
-              </div>
-            </div>
-
-            {error && <div className="alert alert-error">{error}</div>}
-
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success" disabled={creating}>
-                {creating ? (editingId ? "Updating..." : "Registering...") : (editingId ? "Update Patient" : "Register Patient")}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                  setFormData({ fullName: "", egn: "" });
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       <div className="search-bar">
         <input
@@ -308,7 +249,6 @@ export function PatientsPage() {
                 <th>ID</th>
                 <th>Name</th>
                 <th>EGN</th>
-                <th>Email</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -318,7 +258,6 @@ export function PatientsPage() {
                   <td>{patient.id}</td>
                   <td className="font-weight-bold">{patient.fullName}</td>
                   <td>{patient.egn || "N/A"}</td>
-                  <td>{(patient as any).user?.email || "N/A"}</td>
                   <td>
                     <button
                       className="btn btn-sm btn-info"
